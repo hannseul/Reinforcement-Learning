@@ -61,7 +61,7 @@ def q_learning(
             if done:
                 break
         
-        if (episode + 1) % log_interval == 0:
+        if log_interval is not None and (episode + 1) % log_interval == 0:
             avg_return = evaluate_current_policy(env, Q)
             print(f"Episode {episode+1}: Avg Return = {round(avg_return,2)}")
             returns_log.append((episode + 1, avg_return))
