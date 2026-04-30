@@ -1,0 +1,13 @@
+{
+  "checks": {
+    "double_q_learning": true,
+    "finite_dp": true,
+    "bias_metrics": true,
+    "matplotlib_available": true
+  },
+  "errors": {
+    "double_q_learning_error": null,
+    "finite_dp_error": null,
+    "bias_metrics_error": null
+  }
+}

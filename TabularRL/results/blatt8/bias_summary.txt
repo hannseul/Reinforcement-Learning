@@ -1,0 +1,27 @@
+Q-learning
+  n_pairs: 40
+  summed_total_bias: -15.37855837915661
+  summed_squared_total_bias: 11.005080870443475
+  mean_bias: -0.38446395947891526
+  max_positive_bias: 0.629175635214138
+  max_negative_bias: -1.0
+  selected: [{'state': (0, 3), 'action': 'left', 'q_est': 0.4896417353796892, 'q_true': 0.6561000000000001, 'bias': -0.16645826462031094, 'squared_bias': 0.02770835386040546}, {'state': (0, 3), 'action': 'down', 'q_est': 0.40381699397690424, 'q_true': 0.6561000000000001, 'bias': -0.2522830060230959, 'squared_bias': 0.06364671512804944}, {'state': (1, 3), 'action': 'down', 'q_est': 0.129175635214138, 'q_true': -0.5, 'bias': 0.629175635214138, 'squared_bias': 0.39586197994711403}, {'state': (2, 1), 'action': 'right', 'q_est': -0.2, 'q_true': -0.5, 'bias': 0.3, 'squared_bias': 0.09}]
+
+SARSA
+  n_pairs: 40
+  summed_total_bias: -17.82542232348867
+  summed_squared_total_bias: 11.478964460240956
+  mean_bias: -0.44563555808721683
+  max_positive_bias: -0.011594178278001688
+  max_negative_bias: -1.0
+  selected: [{'state': (0, 3), 'action': 'left', 'q_est': 0.5145337683578506, 'q_true': 0.6561000000000001, 'bias': -0.14156623164214954, 'squared_bias': 0.020040997941358742}, {'state': (0, 3), 'action': 'down', 'q_est': 0.3480005521196992, 'q_true': 0.6561000000000001, 'bias': -0.3080994478803009, 'squared_bias': 0.09492526978414625}, {'state': (1, 3), 'action': 'down', 'q_est': -0.5594793176342001, 'q_true': -0.5, 'bias': -0.05947931763420011, 'squared_bias': 0.0035377892262300685}, {'state': (2, 1), 'action': 'right', 'q_est': -0.7184180000000001, 'q_true': -0.5, 'bias': -0.2184180000000001, 'squared_bias': 0.047706422724000046}]
+
+Double Q
+  n_pairs: 40
+  summed_total_bias: -8.004731921827226
+  summed_squared_total_bias: 12.366632530834355
+  mean_bias: -0.20011829804568065
+  max_positive_bias: 0.6286547981526999
+  max_negative_bias: -1.0
+  selected: [{'state': (0, 3), 'action': 'left', 'q_est': 0.9769112582121167, 'q_true': 0.6561000000000001, 'bias': 0.32081125821211653, 'squared_bias': 0.10291986339564131}, {'state': (0, 3), 'action': 'down', 'q_est': 0.7241096198316461, 'q_true': 0.6561000000000001, 'bias': 0.068009619831646, 'squared_bias': 0.004625308389645017}, {'state': (1, 3), 'action': 'down', 'q_est': -0.9296417800000002, 'q_true': -0.5, 'bias': -0.4296417800000002, 'squared_bias': 0.18459205912156856}, {'state': (2, 1), 'action': 'right', 'q_est': 0.1, 'q_true': -0.5, 'bias': 0.6, 'squared_bias': 0.36}]
+

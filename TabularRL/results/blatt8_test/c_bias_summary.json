@@ -1,0 +1,18 @@
+{
+  "Q-Learning": {
+    "n_pairs": 40,
+    "summed_total_bias": -18.43018544876637,
+    "summed_squared_total_bias": 14.736970188389034,
+    "mean_bias": -0.46075463621915924,
+    "max_positive_bias": 0.5739,
+    "max_negative_bias": -1.0
+  },
+  "Double Q-Learning": {
+    "n_pairs": 40,
+    "summed_total_bias": -12.825244748959081,
+    "summed_squared_total_bias": 15.748250258382303,
+    "mean_bias": -0.320631118723977,
+    "max_positive_bias": 0.6499999999999989,
+    "max_negative_bias": -1.0
+  }
+}

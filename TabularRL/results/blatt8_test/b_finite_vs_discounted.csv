@@ -1,0 +1,4 @@
+horizon,finite_time_start_value,finite_time_eval_start_value,first_action
+4,0.65,0.65,up
+8,1.0,1.0,up
+16,1.0,1.0,up

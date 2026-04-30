@@ -1,0 +1,3 @@
+Discounted V(start): 0.6561000000000001
+Finite-time V_0(start): 1.0
+Finite-time evaluated V_0(start): 1.0
