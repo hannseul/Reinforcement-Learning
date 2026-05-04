@@ -45,6 +45,14 @@ from envs.gridworld import GridWorld
 from algos.dp import value_iteration, policy_evaluation, greedy_policy_from_value
 from algos.q_learning import q_learning
 from algos.sarsa import sarsa
+try:
+    from algos.actor_critic import actor_critic, greedy_policy_from_theta
+except Exception as exc:
+    actor_critic = None
+    greedy_policy_from_theta = None
+    ACTOR_CRITIC_IMPORT_ERROR = exc
+else:
+    ACTOR_CRITIC_IMPORT_ERROR = None
 from algos.schedules import constant_schedule
 
 try:
@@ -68,7 +76,7 @@ try:
     from algos.bias_metrics import compare_biases, true_q_from_value
 except Exception:
     try:
-        from metrics.bias_metrics import compare_biases, true_q_from_value
+        from algos.bias_metrics import compare_biases, true_q_from_value
     except Exception as exc:  # pragma: no cover
         compare_biases = None
         true_q_from_value = None
@@ -112,10 +120,10 @@ QUICK = RunConfig(
 FULL = RunConfig(
     name="full",
     n_runs=50,
-    num_episodes=10_000,
-    eval_episodes=1_000,
-    max_steps=50,
-    log_interval=250,
+    num_episodes=20_000,
+    eval_episodes=2_000,
+    max_steps=100,
+    log_interval=500,
 )
 
 GAMMA = 0.9
@@ -234,6 +242,16 @@ def make_backprop_grid(seed: int = 0) -> GridWorld:
         start_state=(0, 0),
         terminal_rewards={(3, 3): 10.0},
         default_reward=0.0,
+        seed=seed,
+    )
+
+def make_grid_b(noise_prob: float = 0.0, seed: int = 0) -> GridWorld:
+    return GridWorld(
+        rows=5,
+        cols=5,
+        start_state=(0, 0),
+        terminal_rewards={(0, 2): 2.0, (4, 4): 10.0},
+        default_reward=-0.1,
         seed=seed,
     )
 
@@ -442,7 +460,7 @@ def experiment_b(config: RunConfig) -> Dict[str, Any]:
     if finite_time_value_iteration is None or finite_time_policy_evaluation is None:
         raise RuntimeError(f"finite_dp konnte nicht importiert werden: {FINITE_DP_IMPORT_ERROR}")
 
-    env = make_submission_grid(noise_prob=0.0, seed=1)
+    env = make_grid_b(noise_prob=0.0, seed=1)
     V_discounted = value_iteration(env, gamma=GAMMA)
     policy_discounted = greedy_policy_from_value(env, V_discounted, gamma=GAMMA)
 
@@ -458,9 +476,9 @@ def experiment_b(config: RunConfig) -> Dict[str, Any]:
             "first_action": str(policy_ft[0].get(env.start_state)),
         })
         policies[horizon] = {str(k): v for k, v in policy_ft[0].items()}
-        plot_policy(policy_ft[0], 4, 4, f"b) Finite-time Policy, H={horizon}", os.path.join(RESULT_DIR, f"b_finite_policy_H{horizon}.png"))
+        plot_policy(policy_ft[0], 5, 5, f"b) Finite-time Policy, H={horizon}", os.path.join(RESULT_DIR, f"b_finite_policy_H{horizon}.png"))
 
-    plot_policy(policy_discounted, 4, 4, "b) Discounted Policy, gamma=0.9", os.path.join(RESULT_DIR, "b_discounted_policy.png"))
+    plot_policy(policy_discounted, 5, 5, "b) Discounted Policy, gamma=0.9", os.path.join(RESULT_DIR, "b_discounted_policy.png"))
     save_csv(rows, os.path.join(RESULT_DIR, "b_finite_vs_discounted.csv"))
 
     return {
@@ -520,6 +538,12 @@ def experiment_c(config: RunConfig) -> Dict[str, Any]:
         "Bias",
         os.path.join(RESULT_DIR, "c_bias_total.png"),
     )
+    plot_bars(
+        {name: float(summary["summed_squared_total_bias"]) for name, summary in bias_results.items()},
+        "c) Summed Squared Total Bias",
+        "Squared Bias",
+        os.path.join(RESULT_DIR, "c_bias_squared.png"),
+    )
 
     return {
         "backpropagation_rows": bp_rows,
@@ -538,31 +562,187 @@ def decreasing_eps(initial: float = 1.0, min_eps: float = 0.05, rate: float = 0.
 def experiment_d(config: RunConfig) -> Dict[str, Any]:
     print("[d] Q-Learning Parameter: alpha, epsilon, schedule")
     parameter_sets = [
+        ("eps=0.00 alpha=0.10 greedy", 0.10, constant_schedule(0.00)),
+        ("eps=0.01 alpha=0.10", 0.10, constant_schedule(0.01)),
         ("eps=0.05 alpha=0.10", 0.10, constant_schedule(0.05)),
         ("eps=0.15 alpha=0.10", 0.10, constant_schedule(0.15)),
         ("eps=0.40 alpha=0.10", 0.10, constant_schedule(0.40)),
+        ("eps=0.15 alpha=0.03", 0.03, constant_schedule(0.15)),
         ("eps=0.15 alpha=0.05", 0.05, constant_schedule(0.15)),
         ("eps=0.15 alpha=0.30", 0.30, constant_schedule(0.15)),
-        ("eps decreasing alpha=0.10", 0.10, decreasing_eps(1.0, 0.05, 0.002)),
+        ("eps=0.15 alpha=0.50", 0.50, constant_schedule(0.15)),
+        ("eps decreasing slow alpha=0.10", 0.10, decreasing_eps(1.0, 0.05, 0.0005)),
+        ("eps decreasing medium alpha=0.10", 0.10, decreasing_eps(1.0, 0.05, 0.002)),
+        ("eps decreasing fast alpha=0.10", 0.10, decreasing_eps(1.0, 0.01, 0.01)),
     ]
 
-    summary_rows = []
-    curves = {}
-    for name, alpha, eps_fn in parameter_sets:
-        _, log, final_returns = run_q_learning_many(lambda seed: make_submission_grid(noise_prob=0.1, seed=seed), config, alpha=alpha, eps_fn=eps_fn)
-        curves[name] = log
-        summary_rows.append({
-            "config": name,
-            "mean_final_return": float(np.mean(final_returns)),
-            "std_final_return": float(np.std(final_returns)),
-            "n_runs": config.n_runs,
-            "num_episodes": config.num_episodes,
-        })
+    all_rows = {}
 
-    save_csv(summary_rows, os.path.join(RESULT_DIR, "d_parameter_sweep.csv"))
-    plot_lines(curves, "d) Q-Learning Parameter Sweep", "Episode", "Return", os.path.join(RESULT_DIR, "d_parameter_sweep.png"))
-    return {"rows": summary_rows}
+    for noise_prob in [0.0, 0.1, 0.3]:
+        summary_rows = []
+        curves = {}
 
+        for name, alpha, eps_fn in parameter_sets:
+            _, log, final_returns = run_q_learning_many(
+                lambda seed, p=noise_prob: make_submission_grid(noise_prob=p, seed=seed),
+                config,
+                alpha=alpha,
+                eps_fn=eps_fn,
+            )
+
+            curves[name] = log
+            summary_rows.append({
+                "noise_prob": noise_prob,
+                "config": name,
+                "mean_final_return": float(np.mean(final_returns)),
+                "std_final_return": float(np.std(final_returns)),
+                "n_runs": config.n_runs,
+                "num_episodes": config.num_episodes,
+            })
+
+        suffix = str(noise_prob).replace(".", "_")
+        save_csv(summary_rows, os.path.join(RESULT_DIR, f"d_parameter_sweep_noise_{suffix}.csv"))
+        plot_lines(
+            curves,
+            f"d) Q-Learning Parameter Sweep, noise={noise_prob}",
+            "Episode",
+            "Return",
+            os.path.join(RESULT_DIR, f"d_parameter_sweep_noise_{suffix}.png"),
+        )
+
+        all_rows[f"noise={noise_prob}"] = summary_rows
+
+    return {"rows_by_noise": all_rows}
+
+def run_actor_critic_many(
+    make_env: Callable[[int], Any],
+    config: RunConfig,
+    alpha_v: float = 0.1,
+    alpha_theta: float = 0.01,
+) -> Tuple[Policy, List[Tuple[int, float]], List[float]]:
+    if actor_critic is None or greedy_policy_from_theta is None:
+        raise RuntimeError(f"actor_critic konnte nicht importiert werden: {ACTOR_CRITIC_IMPORT_ERROR}")
+
+    logs = []
+    final_returns = []
+    last_policy: Policy = {}
+
+    for seed in range(config.n_runs):
+        env = make_env(30_000 + seed)
+
+        theta, V, log = actor_critic(
+            env,
+            gamma=GAMMA,
+            alpha_v=alpha_v,
+            alpha_theta=alpha_theta,
+            num_episodes=config.num_episodes,
+            max_steps=config.max_steps,
+            log_interval=config.log_interval,
+        )
+
+        policy = greedy_policy_from_theta(env, theta)
+        last_policy = policy
+        logs.append(log)
+        final_returns.append(
+            evaluate_policy_mc(env, policy, config.eval_episodes, config.max_steps)
+        )
+
+    return last_policy, aggregate_logs(logs), final_returns
+
+def experiment_e_actor_critic(config: RunConfig) -> Dict[str, Any]:
+    print("[e] Actor-Critic vs. Q-Learning vs. SARSA")
+
+    make_env = lambda seed: make_submission_grid(noise_prob=0.1, seed=seed)
+
+    Q_q, q_log, q_returns = run_q_learning_many(
+        make_env,
+        config,
+        alpha=0.10,
+        eps_fn=constant_schedule(0.15),
+    )
+
+    Q_sarsa, sarsa_return = run_sarsa_many(
+        make_env,
+        config,
+        alpha=0.10,
+        eps_fn=constant_schedule(0.15),
+    )
+
+    ac_policy, ac_log, ac_returns = run_actor_critic_many(
+        make_env,
+        config,
+        alpha_v=0.10,
+        alpha_theta=0.01,
+    )
+
+    curves = {
+        "Q-Learning": q_log,
+        "Actor-Critic": ac_log,
+    }
+
+    plot_lines(
+        curves,
+        "e) Actor-Critic vs. Q-Learning",
+        "Episode",
+        "Return",
+        os.path.join(RESULT_DIR, "e_actor_critic_vs_q_learning_curve.png"),
+    )
+
+    final_values = {
+        "Q-Learning": float(np.mean(q_returns)),
+        "SARSA": float(sarsa_return),
+        "Actor-Critic": float(np.mean(ac_returns)),
+    }
+
+    plot_bars(
+        final_values,
+        "e) Final Policy Evaluation",
+        "Average Return",
+        os.path.join(RESULT_DIR, "e_actor_critic_vs_q_learning_sarsa.png"),
+    )
+
+    plot_policy(
+        greedy_policy_from_q(make_env(123), Q_q),
+        4,
+        4,
+        "e) Q-Learning Policy",
+        os.path.join(RESULT_DIR, "e_q_learning_policy.png"),
+    )
+
+    plot_policy(
+        greedy_policy_from_q(make_env(124), Q_sarsa),
+        4,
+        4,
+        "e) SARSA Policy",
+        os.path.join(RESULT_DIR, "e_sarsa_policy.png"),
+    )
+
+    plot_policy(
+        ac_policy,
+        4,
+        4,
+        "e) Actor-Critic Policy",
+        os.path.join(RESULT_DIR, "e_actor_critic_policy.png"),
+    )
+
+    save_csv(
+        [
+            {
+                "algorithm": name,
+                "mean_final_return": value,
+                "n_runs": config.n_runs,
+                "num_episodes": config.num_episodes,
+            }
+            for name, value in final_values.items()
+        ],
+        os.path.join(RESULT_DIR, "e_actor_critic_summary.csv"),
+    )
+
+    return {
+        "final_values": final_values,
+        "actor_critic_mean": float(np.mean(ac_returns)),
+        "actor_critic_std": float(np.std(ac_returns)),
+    }
 
 def check_required_modules() -> Dict[str, Any]:
     checks = {
@@ -570,15 +750,19 @@ def check_required_modules() -> Dict[str, Any]:
         "finite_dp": FINITE_DP_IMPORT_ERROR is None,
         "bias_metrics": BIAS_IMPORT_ERROR is None,
         "matplotlib_available": plt is not None,
+        "actor_critic": ACTOR_CRITIC_IMPORT_ERROR is None,
     }
     errors = {
         "double_q_learning_error": repr(DOUBLE_Q_IMPORT_ERROR) if DOUBLE_Q_IMPORT_ERROR else None,
         "finite_dp_error": repr(FINITE_DP_IMPORT_ERROR) if FINITE_DP_IMPORT_ERROR else None,
         "bias_metrics_error": repr(BIAS_IMPORT_ERROR) if BIAS_IMPORT_ERROR else None,
+        "actor_critic_error": repr(ACTOR_CRITIC_IMPORT_ERROR) if ACTOR_CRITIC_IMPORT_ERROR else None,
     }
     return {"checks": checks, "errors": errors}
 
 
+
+'''
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--quick", action="store_true", help="kurzer Funktionstest")
@@ -596,6 +780,46 @@ def main() -> None:
         ("b", experiment_b),
         ("c", experiment_c),
         ("d", experiment_d),
+        ("e_actor_critic", experiment_e_actor_critic),
+    ]:
+        try:
+            report[label] = fn(config)
+            print(f"[{label}] OK")
+        except Exception as exc:
+            failures.append(label)
+            report[label] = {"error": repr(exc)}
+            print(f"[{label}] FEHLER: {exc}")
+
+    report["failures"] = failures
+    save_json(report, os.path.join(RESULT_DIR, "blatt8_test_report.json"))
+
+    print("\nFertig.")
+    print(f"Modus: {config.name}")
+    print(f"Ergebnisse: {RESULT_DIR}")
+    if failures:
+        print(f"Fehlgeschlagene Teile: {', '.join(failures)}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+'''
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--quick", action="store_true", help="kurzer Funktionstest")
+    parser.add_argument("--full", action="store_true", help="abgabe-naeherer Lauf")
+    args = parser.parse_args()
+    config = FULL if args.full else QUICK
+
+    ensure_dir(RESULT_DIR)
+    report: Dict[str, Any] = {"config": config.__dict__, "module_checks": check_required_modules()}
+    save_json(report["module_checks"], os.path.join(RESULT_DIR, "module_checks.json"))
+
+    failures: List[str] = []
+    for label, fn in [
+        ("b", experiment_b),
     ]:
         try:
             report[label] = fn(config)

@@ -1,0 +1,4 @@
+algorithm,mean_final_return,n_runs,num_episodes
+Q-Learning,0.5150401941900977,50,20000
+SARSA,0.5108045856296433,50,20000
+Actor-Critic,0.5087095093349951,50,20000

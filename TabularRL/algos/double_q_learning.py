@@ -130,7 +130,7 @@ def double_q_learning(
 def combine_double_q(Q1, Q2):
     """Kombiniert Q1 und Q2 durch Addition."""
     keys = set(Q1.keys()).union(Q2.keys())
-    return {key: Q1.get(key, 0.0) + Q2.get(key, 0.0) for key in keys}
+    return {key: 0.5 * (Q1.get(key, 0.0) + Q2.get(key, 0.0)) for key in keys}
 
 
 def evaluate_greedy_policy(env, Q, episodes=100, max_steps=200):

@@ -1,185 +1,48 @@
 {
   "config": {
-    "name": "quick",
-    "n_runs": 3,
-    "num_episodes": 800,
-    "eval_episodes": 100,
-    "max_steps": 50,
-    "log_interval": 200
+    "name": "full",
+    "n_runs": 50,
+    "num_episodes": 20000,
+    "eval_episodes": 2000,
+    "max_steps": 100,
+    "log_interval": 500
   },
   "module_checks": {
     "checks": {
       "double_q_learning": true,
       "finite_dp": true,
       "bias_metrics": true,
-      "matplotlib_available": true
+      "matplotlib_available": true,
+      "actor_critic": true
     },
     "errors": {
       "double_q_learning_error": null,
       "finite_dp_error": null,
-      "bias_metrics_error": null
+      "bias_metrics_error": null,
+      "actor_critic_error": null
     }
   },
-  "a": {
-    "exact_start_value": 0.6561000000000001,
-    "q_learning_final_return_mean": 0.5671156666666667,
-    "q_learning_final_return_std": 0.06395548470789833,
-    "last_vi_delta": 0.0
-  },
   "b": {
-    "discounted_start_value": 0.6561000000000001,
+    "discounted_start_value": 4.2612659000000015,
     "discounted_first_action": "down",
     "finite_time_rows": [
       {
         "horizon": 4,
-        "finite_time_start_value": 0.65,
-        "finite_time_eval_start_value": 0.65,
-        "first_action": "up"
+        "finite_time_start_value": 1.9,
+        "finite_time_eval_start_value": 1.9,
+        "first_action": "right"
       },
       {
         "horizon": 8,
-        "finite_time_start_value": 1.0,
-        "finite_time_eval_start_value": 1.0,
-        "first_action": "up"
+        "finite_time_start_value": 9.300000000000002,
+        "finite_time_eval_start_value": 9.300000000000002,
+        "first_action": "down"
       },
       {
         "horizon": 16,
-        "finite_time_start_value": 1.0,
-        "finite_time_eval_start_value": 1.0,
-        "first_action": "up"
-      }
-    ]
-  },
-  "c": {
-    "backpropagation_rows": [
-      {
-        "iteration": 0,
-        "(3, 2)": 0.0,
-        "(2, 2)": 0.0,
-        "(1, 2)": 0.0,
-        "(0, 0)": 0.0
-      },
-      {
-        "iteration": 1,
-        "(3, 2)": 10.0,
-        "(2, 2)": 0.0,
-        "(1, 2)": 0.0,
-        "(0, 0)": 0.0
-      },
-      {
-        "iteration": 2,
-        "(3, 2)": 10.0,
-        "(2, 2)": 9.0,
-        "(1, 2)": 0.0,
-        "(0, 0)": 0.0
-      },
-      {
-        "iteration": 3,
-        "(3, 2)": 10.0,
-        "(2, 2)": 9.0,
-        "(1, 2)": 8.1,
-        "(0, 0)": 0.0
-      },
-      {
-        "iteration": 4,
-        "(3, 2)": 10.0,
-        "(2, 2)": 9.0,
-        "(1, 2)": 8.1,
-        "(0, 0)": 0.0
-      },
-      {
-        "iteration": 5,
-        "(3, 2)": 10.0,
-        "(2, 2)": 9.0,
-        "(1, 2)": 8.1,
-        "(0, 0)": 0.0
-      },
-      {
-        "iteration": 6,
-        "(3, 2)": 10.0,
-        "(2, 2)": 9.0,
-        "(1, 2)": 8.1,
-        "(0, 0)": 5.9049000000000005
-      },
-      {
-        "iteration": 7,
-        "(3, 2)": 10.0,
-        "(2, 2)": 9.0,
-        "(1, 2)": 8.1,
-        "(0, 0)": 5.9049000000000005
-      },
-      {
-        "iteration": 8,
-        "(3, 2)": 10.0,
-        "(2, 2)": 9.0,
-        "(1, 2)": 8.1,
-        "(0, 0)": 5.9049000000000005
-      }
-    ],
-    "cliff_q_return_mean": 1.3596000427860162,
-    "cliff_sarsa_return_mean": 1.0033220857162266,
-    "bias_results": {
-      "Q-Learning": {
-        "n_pairs": 40,
-        "summed_total_bias": -18.43018544876637,
-        "summed_squared_total_bias": 14.736970188389034,
-        "mean_bias": -0.46075463621915924,
-        "max_positive_bias": 0.5739,
-        "max_negative_bias": -1.0
-      },
-      "Double Q-Learning": {
-        "n_pairs": 40,
-        "summed_total_bias": -12.825244748959081,
-        "summed_squared_total_bias": 15.748250258382303,
-        "mean_bias": -0.320631118723977,
-        "max_positive_bias": 0.6499999999999989,
-        "max_negative_bias": -1.0
-      }
-    }
-  },
-  "d": {
-    "rows": [
-      {
-        "config": "eps=0.05 alpha=0.10",
-        "mean_final_return": 0.49109038798910004,
-        "std_final_return": 0.07378724728626083,
-        "n_runs": 3,
-        "num_episodes": 800
-      },
-      {
-        "config": "eps=0.15 alpha=0.10",
-        "mean_final_return": 0.5045324093287169,
-        "std_final_return": 0.011035871774248168,
-        "n_runs": 3,
-        "num_episodes": 800
-      },
-      {
-        "config": "eps=0.40 alpha=0.10",
-        "mean_final_return": 0.5643411825335001,
-        "std_final_return": 0.04909282789982702,
-        "n_runs": 3,
-        "num_episodes": 800
-      },
-      {
-        "config": "eps=0.15 alpha=0.05",
-        "mean_final_return": 0.5667786998300001,
-        "std_final_return": 0.04886003787184,
-        "n_runs": 3,
-        "num_episodes": 800
-      },
-      {
-        "config": "eps=0.15 alpha=0.30",
-        "mean_final_return": 0.507803926336574,
-        "std_final_return": 0.006942437276290699,
-        "n_runs": 3,
-        "num_episodes": 800
-      },
-      {
-        "config": "eps decreasing alpha=0.10",
-        "mean_final_return": 0.5661451538650001,
-        "std_final_return": 0.047764850764584844,
-        "n_runs": 3,
-        "num_episodes": 800
+        "finite_time_start_value": 9.300000000000002,
+        "finite_time_eval_start_value": 9.300000000000002,
+        "first_action": "down"
       }
     ]
   },
